@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrador Web II - Flores Mariana</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Búsqueda de Obras de Arte</h1>
+    </header>
+
+    <section>
+        <form id="searchForm">
+            <label for="departamento">Departamento:</label>
+            <select id="departamento">
+                <!-- Opciones serán añadidas dinámicamente -->
+            </select>
+
+            <label for="keyword">Palabra clave:</label>
+            <input type="text" id="keyword" placeholder="Buscar por palabra clave...">
+
+            <label for="localizacion">Localización:</label>
+            <input type="text" id="localizacion" placeholder="Ciudad, estado, país...">
+
+            <button type="submit">Buscar</button>
+        </form>
+    </section>
+
+    <section id="results">
+        <div class="gallery">
+            <!-- Las imágenes se mostrarán aquí
+            <div id="loader" class="loader hidden"></div> -->
+            <div id="loader" class="loader" style="display: none"></div>
+
+        </div>
+        <div id="pagination" class="pagination">
+             <!-- Controles de paginación  -->
+        </div>
+    </section>
+
+    <script src="javascripts/script.js"></script>
+</body>
+</html>
