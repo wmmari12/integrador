@@ -61,7 +61,7 @@ translate({
 //   }
 // });
 
-// Función para traducir texto utilizando node-google-translate-skidz
+// // Función para traducir texto utilizando node-google-translate-skidz
 // function translateText(text, targetLanguage) {
 //   return new Promise((resolve, reject) => {
 //     translate({
@@ -80,49 +80,49 @@ translate({
 
 
 //Función traducida, clase 7
-app.get('/', async (req, res) => {
-  try {
-    const response = await axios.get(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`);
-    const objetos = response.data;
+// app.get('/', async (req, res) => {
+//   try {
+//     const response = await axios.get(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`);
+//     const objetos = response.data;
 
-    const objetosTraducidos = await Promise.all(objetos.map(async objeto => {
-      const tituloTraducido = await translateText(objeto.title,'en','es');
-      const dynastyTraducido = await translateText(objeto.dynasty,'en','es');
-      const cultureTraducido = await translateText(objeto.culture,'en','es');
-      return{
-        id: objeto.id,
-        title: tituloTraducido,
-        dynasty: dynastyTraducido,
-        culture: cultureTraducido,
-      }
-    }));
-    res.render('index',{objetos:objetosTraducidos});
-  } catch (error) {
-    console.error('Error al obtener los objetos: ', error);
-    res.status(500).send('Error interno del servidor');
-  }
+//     const objetosTraducidos = await Promise.all(objetos.map(async objeto => {
+//       const tituloTraducido = await translateText(objeto.title,'en','es');
+//       const dynastyTraducido = await translateText(objeto.dynasty,'en','es');
+//       const cultureTraducido = await translateText(objeto.culture,'en','es');
+//       return{
+//         id: objeto.id,
+//         title: tituloTraducido,
+//         dynasty: dynastyTraducido,
+//         culture: cultureTraducido,
+//       }
+//     }));
+//     res.render('index',{objetos:objetosTraducidos});
+//   } catch (error) {
+//     console.error('Error al obtener los objetos: ', error);
+//     res.status(500).send('Error interno del servidor');
+//   }
 
-});
+// });
 
-app.get('/traducir', async (req,res) => {
-  res.send('<h1>Listar</h1>');
-});
+// app.get('/traducir', async (req,res) => {
+//   res.send('<h1>Listar</h1>');
+// });
 
-async function translateText(text, sourceLang, targetLang) {
-    return new Promise((resolve, reject) => {
-      translate({
-        text:texto,
-        source: sourceLang,
-        target: targetLang
-      }, function(result) {
-        if (result && result.translation) {
-          resolve(result.translation);
-        } else {
-          reject('Error en la traducción');
-        }
-      });
-    });
-  }
+// async function translateText(text, sourceLang, targetLang) {
+//     return new Promise((resolve, reject) => {
+//       translate({
+//         text:texto,
+//         source: sourceLang,
+//         target: targetLang
+//       }, function(result) {
+//         if (result && result.translation) {
+//           resolve(result.translation);
+//         } else {
+//           reject('Error en la traducción');
+//         }
+//       });
+//     });
+//   }
 
 
 app.listen(() => {

@@ -1,6 +1,6 @@
-// const express = require('express');
+//const express = require('express');
 // const fetch = require('node-fetch');
-// const translate = require('node-google-translate-skidz');
+//const translate = require('node-google-translate-skidz');
 
 // const app = express();
 // const port = 3000;
@@ -126,6 +126,99 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
     createPagination(objectIDs.length, page, pageSize);
 
 }
+
+//dispayResults traducida
+
+// async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
+//     const gallery = document.querySelector('.gallery');
+//     const paginationContainer = document.querySelector('.pagination');
+//     gallery.innerHTML = ''; // Limpiar la galería
+//     paginationContainer.innerHTML = ''; // Limpiar la paginación
+
+//     showLoader(); // Mostrar loader
+
+//     let validObjects = [];
+//     let index = (page - 1) * pageSize;
+//     let loadedItems = 0;
+
+//     const keywordLowerCase = keyword.toLowerCase();
+
+//     while (loadedItems < pageSize && index < objectIDs.length) {
+//         const objectId = objectIDs[index];
+//         index++;
+
+//         try {
+//             const response = await fetch(`${baseURL}/objects/${objectId}`);
+
+//             if (!response.ok) {
+//                 console.log(`Error ${response.status} para el objeto ${objectId}`);
+//                 continue; 
+//             }
+
+//             const object = await response.json();
+
+//             if (object.message) {
+//                 console.log(`Objeto no válido: ${objectId}`);
+//                 continue; 
+//             }
+
+//             // Filtrar por keyword solo en title, culture, dynasty
+//             let matchesKeyword = false;
+//             if (object.title && object.title.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+//             if (object.culture && object.culture.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+//             if (object.dynasty && object.dynasty.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+
+//             if (!keyword || matchesKeyword) {
+//                 // Traducir título, cultura y dinastía si están presentes
+//                 const translatedTitle = object.title ? await translateText(object.title) : 'Sin título';
+//                 const translatedCulture = object.culture ? await translateText(object.culture) : 'N/A';
+//                 const translatedDynasty = object.dynasty ? await translateText(object.dynasty) : 'N/A';
+
+//                 validObjects.push({
+//                     ...object,
+//                     translatedTitle,
+//                     translatedCulture,
+//                     translatedDynasty
+//                 });
+//                 loadedItems++;
+//             }
+//         } catch (error) {
+//             console.error(`Error al obtener el objeto ${objectId}:`, error);
+//             continue; 
+//         }
+//     }
+
+//     validObjects.forEach((object) => {
+//         const card = document.createElement('div');
+//         card.classList.add('card');
+
+//         const img = document.createElement('img');
+//         img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+//         img.alt = object.title || 'Imagen no disponible';
+//         card.appendChild(img);
+
+//         const title = document.createElement('p');
+//         title.classList.add('card-title');
+//         title.textContent = object.translatedTitle;
+//         card.appendChild(title);
+
+//         const info = document.createElement('p');
+//         info.textContent = `${object.translatedCulture} - ${object.translatedDynasty}`;
+//         card.appendChild(info);
+
+//         gallery.appendChild(card);
+//     });
+
+//     hideLoader(); 
+//     createPagination(objectIDs.length, page, pageSize); 
+// }
+
 //Función para crear paginación
 function createPagination(totalItems, currentPage, pageSize) {
     const paginationContainer = document.querySelector('.pagination');
@@ -321,6 +414,22 @@ async function searchObjects(event) {
 //     }
 // }
 
+// Función para traducir texto usando node-google-translate-skidz
+async function translateText(text, targetLanguage = 'es') {
+    return new Promise((resolve, reject) => {
+        translate({
+            text: text,
+            source: 'en',
+            target: targetLanguage
+        }, function(result) {
+            if (result && result.translation) {
+                resolve(result.translation);
+            } else {
+                reject('Error al traducir');
+            }
+        });
+    });
+}
 
 // Iniciar el servidor
 // app.listen(port, () => {
