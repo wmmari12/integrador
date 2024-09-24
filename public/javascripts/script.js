@@ -37,43 +37,111 @@ async function loadDepartments() {
     });
 }
 
-// Función para mostrar reusltados
+// Función para abrir el modal con imágenes adicionales
+function openModal(images) {
+    const modal = document.getElementById("additionalImagesModal");
+    const gallery = document.getElementById("additionalImagesGallery");
+
+    // Limpiar la galería antes de mostrar nuevas imágenes
+    gallery.innerHTML = '';
+
+    // Agregar cada imagen al modal
+    images.forEach(imageUrl => {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        gallery.appendChild(img);
+    });
+
+    // Mostrar el modal
+    modal.style.display = "block";
+}
+
+// Función para cerrar el modal
+function closeModal() {
+    const modal = document.getElementById("additionalImagesModal");
+    modal.style.display = "none";
+}
+
+// Obtener el botón de cerrar el modal
+const closeButton = document.querySelector(".close");
+closeButton.addEventListener('click', closeModal);
+
+// Cerrar el modal si el usuario hace clic fuera de la caja del modal
+window.onclick = function(event) {
+    const modal = document.getElementById("additionalImagesModal");
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+
+//Funciòn para crear las cards con un botòn de imagenes adicionales
+function createCard(object) {
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    const img = document.createElement('img');
+    img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+    img.alt = object.title || 'Imagen no disponible';
+    card.appendChild(img);
+
+    const title = document.createElement('p');
+    title.classList.add('card-title');
+    title.textContent = object.translatedTitle;
+    card.appendChild(title);
+
+    const info = document.createElement('p');
+    info.textContent = `${object.translatedCulture} - ${object.translatedDynasty}`;
+    card.appendChild(info);
+
+    // Mostrar botón si hay imágenes adicionales
+    if (object.additionalImages && object.additionalImages.length > 0) {
+        const additionalImagesButton = document.createElement('button');
+        additionalImagesButton.textContent = "Ver imágenes adicionales";
+        additionalImagesButton.addEventListener('click', () => {
+            openModal(object.additionalImages);
+        });
+        card.appendChild(additionalImagesButton);
+    }
+
+    return card;
+}
+
+
 async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
     const gallery = document.querySelector('.gallery');
-    const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
+    const paginationContainer = document.querySelector('.pagination');
     gallery.innerHTML = ''; // Limpiar la galería de resultados anteriores
-    paginationContainer.innerHTML = ''; // Limpiar la paginación anterior
+    paginationContainer.innerHTML = ''; // Limpiar la paginación
 
-    showLoader(); // Mostrar el loader antes de comenzar la búsqueda
+    showLoader(); // Mostrar loader mientras se cargan los resultados
 
-    let validObjects = []; // Array para almacenar los objetos filtrados
-    let index = (page - 1) * pageSize; // Índice inicial de la página actual
-    let loadedItems = 0; // Contador de objetos cargados en la página actual
+    let validObjects = [];
+    let index = (page - 1) * pageSize; // Calcular el índice de la página
+    let loadedItems = 0;
 
     const keywordLowerCase = keyword.toLowerCase();
 
-    // Continuar buscando objetos hasta completar el número necesario o llegar al final de la lista
     while (loadedItems < pageSize && index < objectIDs.length) {
         const objectId = objectIDs[index];
-        index++; // Avanzar el índice
+        index++;
 
         try {
             const response = await fetch(`${baseURL}/objects/${objectId}`);
 
-            // Verificar si la respuesta no fue exitosa (ej. 404)
             if (!response.ok) {
                 console.log(`Error ${response.status} para el objeto ${objectId}`);
-                continue; // Saltar este objeto y continuar con los siguientes
+                continue; // Saltar objetos no válidos
             }
 
             const object = await response.json();
 
             if (object.message) {
                 console.log(`Objeto no válido: ${objectId}`);
-                continue; // Saltar este objeto
+                continue; // Ignorar objetos inválidos
             }
 
-            // Filtrar por keyword solo en los campos title, culture y dynasty
+            // Filtrar por keyword solo en title, culture, dynasty
             let matchesKeyword = false;
             if (object.title && object.title.toLowerCase().includes(keywordLowerCase)) {
                 matchesKeyword = true;
@@ -86,46 +154,129 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
             }
 
             if (!keyword || matchesKeyword) {
-                validObjects.push(object);
+                // Traducir título, cultura y dinastía si están presentes
+                const translatedTitle = object.title;// ? await translateText(object.title) : 'Sin título';
+                const translatedCulture = object.culture;// ? await translateText(object.culture) : 'N/A';
+                const translatedDynasty = object.dynasty;// ? await translateText(object.dynasty) : 'N/A';
+
+                validObjects.push({
+                    ...object,
+                    translatedTitle,
+                    translatedCulture,
+                    translatedDynasty
+                });
                 loadedItems++;
             }
         } catch (error) {
             console.error(`Error al obtener el objeto ${objectId}:`, error);
-            continue;
+            continue; // Ignorar errores al obtener objetos individuales
         }
     }
 
-    // Mostrar los objetos filtrados en la galería
+    // Crear las cards para los objetos válidos
     validObjects.forEach((object) => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-
-        // Imagen del objeto o imagen por defecto
-        const img = document.createElement('img');
-        img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
-        img.alt = object.title || 'Imagen no disponible';
-        card.appendChild(img);
-
-        const title = document.createElement('p');
-        title.classList.add('card-title');
-        title.textContent = object.title || 'Sin título';
-        card.appendChild(title);
-
-        const info = document.createElement('p');
-        info.textContent = `${object.culture || 'N/A'} - ${object.dynasty || 'N/A'}`;
-        card.appendChild(info);
-
-        const date = document.createElement('div');
-        date.classList.add('card-date');
-        date.textContent = object.objectDate || 'Fecha desconocida';
-        card.appendChild(date);
-
-        gallery.appendChild(card);
+        const card = createCard(object);
+        gallery.appendChild(card); // Añadir la card a la galería
     });
 
-    createPagination(objectIDs.length, page, pageSize);
+    hideLoader(); // Ocultar loader una vez se han cargado los resultados
 
+    // Crear la paginación si hay más resultados que el tamaño de la página
+    if (objectIDs.length > pageSize) {
+        createPagination(objectIDs.length, page, pageSize);
+    }
 }
+
+
+// Función para mostrar reusltados FUNCIONA SIN IMAGENES ADICIONALES
+// async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
+//     const gallery = document.querySelector('.gallery');
+//     const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
+//     gallery.innerHTML = ''; // Limpiar la galería de resultados anteriores
+//     paginationContainer.innerHTML = ''; // Limpiar la paginación anterior
+
+//     showLoader(); // Mostrar el loader antes de comenzar la búsqueda
+
+//     let validObjects = []; // Array para almacenar los objetos filtrados
+//     let index = (page - 1) * pageSize; // Índice inicial de la página actual
+//     let loadedItems = 0; // Contador de objetos cargados en la página actual
+
+//     const keywordLowerCase = keyword.toLowerCase();
+
+//     // Continuar buscando objetos hasta completar el número necesario o llegar al final de la lista
+//     while (loadedItems < pageSize && index < objectIDs.length) {
+//         const objectId = objectIDs[index];
+//         index++; // Avanzar el índice
+
+//         try {
+//             const response = await fetch(`${baseURL}/objects/${objectId}`);
+
+//             // Verificar si la respuesta no fue exitosa (ej. 404)
+//             if (!response.ok) {
+//                 console.log(`Error ${response.status} para el objeto ${objectId}`);
+//                 continue; // Saltar este objeto y continuar con los siguientes
+//             }
+
+//             const object = await response.json();
+
+//             if (object.message) {
+//                 console.log(`Objeto no válido: ${objectId}`);
+//                 continue; // Saltar este objeto
+//             }
+
+//             // Filtrar por keyword solo en los campos title, culture y dynasty
+//             let matchesKeyword = false;
+//             if (object.title && object.title.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+//             if (object.culture && object.culture.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+//             if (object.dynasty && object.dynasty.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+
+//             if (!keyword || matchesKeyword) {
+//                 validObjects.push(object);
+//                 loadedItems++;
+//             }
+//         } catch (error) {
+//             console.error(`Error al obtener el objeto ${objectId}:`, error);
+//             continue;
+//         }
+//     }
+
+//     // Mostrar los objetos filtrados en la galería
+//     validObjects.forEach((object) => {
+//         const card = document.createElement('div');
+//         card.classList.add('card');
+
+//         // Imagen del objeto o imagen por defecto
+//         const img = document.createElement('img');
+//         img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+//         img.alt = object.title || 'Imagen no disponible';
+//         card.appendChild(img);
+
+//         const title = document.createElement('p');
+//         title.classList.add('card-title');
+//         title.textContent = object.title || 'Sin título';
+//         card.appendChild(title);
+
+//         const info = document.createElement('p');
+//         info.textContent = `${object.culture || 'N/A'} - ${object.dynasty || 'N/A'}`;
+//         card.appendChild(info);
+
+//         const date = document.createElement('div');
+//         date.classList.add('card-date');
+//         date.textContent = object.objectDate || 'Fecha desconocida';
+//         card.appendChild(date);
+
+//         gallery.appendChild(card);
+//     });
+
+//     createPagination(objectIDs.length, page, pageSize);
+
+// }
 
 //dispayResults traducida
 
@@ -381,6 +532,8 @@ async function searchObjects(event) {
 
     allObjects = data.objectIDs || []; //arreglo con todos los objetos obtenidos
     console.log("Total de objetos devueltos:", allObjects.length); // Verificar la cantidad de objetos
+    console.log("ID Objetos: ",data.objectIDs);
+    console.log("HOLAA");
 
     if (allObjects.length === 0) {
         alert('No se encontraron objetos que coincidan con la búsqueda.');
@@ -415,21 +568,21 @@ async function searchObjects(event) {
 // }
 
 // Función para traducir texto usando node-google-translate-skidz
-async function translateText(text, targetLanguage = 'es') {
-    return new Promise((resolve, reject) => {
-        translate({
-            text: text,
-            source: 'en',
-            target: targetLanguage
-        }, function(result) {
-            if (result && result.translation) {
-                resolve(result.translation);
-            } else {
-                reject('Error al traducir');
-            }
-        });
-    });
-}
+// async function translateText(text, targetLanguage = 'es') {
+//     return new Promise((resolve, reject) => {
+//         translate({
+//             text: text,
+//             source: 'en',
+//             target: targetLanguage
+//         }, function(result) {
+//             if (result && result.translation) {
+//                 resolve(result.translation);
+//             } else {
+//                 reject('Error al traducir');
+//             }
+//         });
+//     });
+// }
 
 // Iniciar el servidor
 // app.listen(port, () => {
