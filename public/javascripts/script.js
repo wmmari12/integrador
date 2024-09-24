@@ -1,5 +1,5 @@
 //const express = require('express');
-// const fetch = require('node-fetch');
+//const fetch = require('node-fetch');
 //const translate = require('node-google-translate-skidz');
 
 // const app = express();
@@ -11,7 +11,6 @@ let currentPage = 1; // Página actual
 const itemsPerPage = 20; // Cantidad de objetos por página
 let currentPageBlock = 1; // Bloque de 10 páginas actual
 const maxPagesToShow = 10; // Máximo de botones de paginación visibles a la vez
-
 
 // Función para cargar departamentos en el select
 async function loadDepartments() {
