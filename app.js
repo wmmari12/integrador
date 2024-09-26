@@ -37,6 +37,7 @@ app.post('/translate', (req, res) => {
 
 });
 
+
 app.listen(() => {
   console.log(`Servidor escuchando en http://localhost:${port}`)
 });
@@ -69,6 +70,10 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'))
+})
 
 module.exports = app;
 

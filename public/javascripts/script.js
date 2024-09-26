@@ -285,7 +285,11 @@ async function searchObjects(event) {
     event.preventDefault();
 
     // Mostrar el loader antes de iniciar la búsqueda
-    showLoader();
+    // showLoader();
+    swal("Estamos realizando tu búsqueda!", {
+        buttons: false,
+        timer: 5000,
+      });
 
     const departamento = document.getElementById('departamento').value;
     const keyword = document.getElementById('keyword').value;

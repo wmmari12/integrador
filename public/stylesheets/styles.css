@@ -166,3 +166,7 @@ button:hover {
     width: 100%;
     text-align: center;
 }
+
+.swal-overlay {
+    background-color: rgba(136, 136, 136, 0.45);
+  }
