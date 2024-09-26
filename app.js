@@ -1,7 +1,6 @@
 var createError = require('http-errors');
+var express = require('express');
 var path = require('path');
-const express = require('express');
-const translate = require('node-google-translate-skidz');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const axios = require('axios');
@@ -9,63 +8,47 @@ const axios = require('axios');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-const app = express();
-const PORT = 3000;
-
+var app = express();
+const port = 3000
 app.use(express.json());
-
-// Ruta para traducir texto
-app.post('/translate', async (req, res) => {
-    const { text, targetLanguage } = req.body;
-
-    if (!text || !targetLanguage) {
-        return res.status(400).json({ error: 'Faltan parámetros: text o targetLanguage' });
-    }
-
-    try {
-        // Lógica de traducción con captura de errores
-        translate({
-            text: text,
-            source: 'en',
-            target: targetLanguage
-        }, function(result) {
-            if (result && result.translation) {
-                return res.json({ translation: result.translation });
-            } else {
-                console.error('Error en la respuesta de traducción:', result);  // Imprimir detalles del error
-                return res.status(500).json({ error: 'Error al traducir el texto' });
-            }
-        });
-    } catch (error) {
-        console.error('Error en la solicitud de traducción:', error);  // Imprimir el error exacto
-        res.status(500).json({ error: 'Error en el servidor' });
-    }
-});
-
-translate({
-  text: 'Hello world one two',
-  source: 'en',
-  target: 'es'
-}, function(result) {
-  console.log('Traducción de prueba:', result);
-});
-
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
-
+const translate = require('node-google-translate-skidz');
+//ANDA EL TRADUCTOR
 // translate({
-//     text: 'Hello world',
-//     source: 'en',
-//     target: 'es'
-// }, function(result) {
-//     console.log("trducciòn:" ,result);
+//   text: 'Hello world one and two!',
+//   source: 'en',
+//   target: 'es'
+// }, (result) => {
+//   console.log(result.translation); 
 // });
 
+//trducir texto https://github.com/calderon104/museo/blob/main/app.js
+app.post('/translate', (req, res) => {
+  console.log("en el post de traducir");
+  console.log(req.body); // Verifica qué datos llegan
+  const { text, targetLang } = req.body;
 
+  if (!text || !targetLang) {
+    return res.status(400).json({ error: 'Faltan parámetros de texto o idioma.' });
+  }
+
+  translate({
+    text: text,
+    source: 'en',
+    target: targetLang,
+  }, (result) => {
+
+    console.log("el resultado de la traduccion es: " + result); // Muestra el resultado de la traducción para depuración
+    if (result && result.translation) {
+      res.json({ translatedText: result.translation });
+    } else {
+      res.status(500).json({ error: 'Error al traducir el texto' });
+    }
+  });
+
+});
 
 app.listen(() => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`)
+  console.log(`Servidor escuchando en http://localhost:${port}`)
 });
 
 // view engine setup
@@ -73,7 +56,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));
-app.use(express.json());
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));

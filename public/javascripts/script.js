@@ -1,10 +1,17 @@
+//const express = require('express');
+// const fetch = require('node-fetch');
+//const translate = require('node-google-translate-skidz');
+
+// const app = express();
+// const port = 3000;
+
 const baseURL = "https://collectionapi.metmuseum.org/public/collection/v1";
 let allObjects = []; // Aquí guardamos todos los objetos recuperados
 let currentPage = 1; // Página actual
 const itemsPerPage = 20; // Cantidad de objetos por página
 let currentPageBlock = 1; // Bloque de 10 páginas actual
 const maxPagesToShow = 10; // Máximo de botones de paginación visibles a la vez
-//const translate = require('node-google-translate-skidz');
+
 
 // Función para cargar departamentos en el select
 async function loadDepartments() {
@@ -18,10 +25,10 @@ async function loadDepartments() {
     optionTodos.textContent = "Todos";
     departamentoSelect.appendChild(optionTodos);
 
-    // Ordena los departamentos alfabéticamente
+    // Ordenar departamentos alfabéticamente
     data.departments.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-    // Añade departamentos al select
+    // Añadir departamentos al select
     data.departments.forEach(dept => {
         const option = document.createElement('option');
         option.value = dept.departmentId;
@@ -30,112 +37,43 @@ async function loadDepartments() {
     });
 }
 
-// Función para abrir el modal con imágenes adicionales
-function openModal(images) {
-    const modal = document.getElementById("additionalImagesModal");
-    const gallery = document.getElementById("additionalImagesGallery");
-
-    // Limpiar la galería antes de mostrar nuevas imágenes
-    gallery.innerHTML = '';
-
-    // Agregar cada imagen al modal
-    images.forEach(imageUrl => {
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        gallery.appendChild(img);
-    });
-
-    // Mostrar el modal
-    modal.style.display = "block";
-}
-
-// Función para cerrar el modal
-function closeModal() {
-    const modal = document.getElementById("additionalImagesModal");
-    modal.style.display = "none";
-}
-
-// Obtener el botón de cerrar el modal
-const closeButton = document.querySelector(".close");
-closeButton.addEventListener('click', closeModal);
-
-// Cerrar el modal si el usuario hace clic fuera de la caja del modal
-window.onclick = function(event) {
-    const modal = document.getElementById("additionalImagesModal");
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
-
-//Funciòn para crear las cards con un botón de imagenes adicionales                
-
-function createCard(object) {
-    const card = document.createElement('div');
-    card.classList.add('card');
-
-    const img = document.createElement('img');
-    img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
-    img.alt = object.title || 'Imagen no disponible';
-    card.appendChild(img);
-
-    const title = document.createElement('p');
-    title.classList.add('card-title');
-    title.textContent = object.translatedTitle;
-    card.appendChild(title);
-
-    const info = document.createElement('p');
-    info.textContent = `${object.translatedCulture} - ${object.translatedDynasty}`;
-    card.appendChild(info);
-
-
-    // Mostrar botón si hay imágenes adicionales
-    if (object.additionalImages && object.additionalImages.length > 0) {
-        const additionalImagesButton = document.createElement('button');
-        additionalImagesButton.textContent = "Ver imágenes adicionales";
-        additionalImagesButton.addEventListener('click', () => {
-            openModal(object.additionalImages);
-        });
-        card.appendChild(additionalImagesButton);
-    }
-
-    return card;
-}
-
-//Función que muestra los resultados (cards) según los filtros de búsqueda aplicados
+// Función para mostrar reusltados
 async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
     const gallery = document.querySelector('.gallery');
-    const paginationContainer = document.querySelector('.pagination');
+    const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
     gallery.innerHTML = ''; // Limpiar la galería de resultados anteriores
-    paginationContainer.innerHTML = ''; // Limpiar la paginación
+    paginationContainer.innerHTML = ''; // Limpiar la paginación anterior
 
-    showLoader(); // Mostrar loader mientras se cargan los resultados
+    showLoader(); // Mostrar el loader antes de comenzar la búsqueda
 
-    let validObjects = [];
-    let index = (page - 1) * pageSize; // Calcular el índice de la página
-    let loadedItems = 0;
+    let validObjects = []; // Array para almacenar los objetos filtrados
+    let index = (page - 1) * pageSize; // Índice inicial de la página actual
+    let loadedItems = 0; // Contador de objetos cargados en la página actual
 
     const keywordLowerCase = keyword.toLowerCase();
 
+    // Continuar buscando objetos hasta completar el número necesario o llegar al final de la lista
     while (loadedItems < pageSize && index < objectIDs.length) {
         const objectId = objectIDs[index];
-        index++;
+        index++; // Avanzar el índice
 
         try {
             const response = await fetch(`${baseURL}/objects/${objectId}`);
 
+            // Verificar si la respuesta no fue exitosa (ej. 404)
             if (!response.ok) {
                 console.log(`Error ${response.status} para el objeto ${objectId}`);
-                continue; // Saltar objetos no válidos
+                continue; // Saltar este objeto y continuar con los siguientes
             }
 
             const object = await response.json();
 
             if (object.message) {
                 console.log(`Objeto no válido: ${objectId}`);
-                continue; // Ignorar objetos inválidos
+                continue; // Saltar este objeto
             }
 
-            // Filtrar por keyword solo en title, culture, dynasty
+            // Filtrar por keyword solo en los campos title, culture y dynasty
             let matchesKeyword = false;
             if (object.title && object.title.toLowerCase().includes(keywordLowerCase)) {
                 matchesKeyword = true;
@@ -148,38 +86,96 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
             }
 
             if (!keyword || matchesKeyword) {
-                // Traducir título, cultura y dinastía si están presentes
-                const translatedTitle = translateText(object.title,'es');// ? await translateText(object.title) : 'Sin título';
-                console.log ("titulo object.title: ", object.title);
-                console.log("titulo traducido: ", translatedTitle);
-                const translatedCulture = translateText(object.culture,'es');// ? await translateText(object.culture) : 'N/A';
-                const translatedDynasty = translateText(object.dynasty,'es');// ? await translateText(object.dynasty) : 'N/A';
-
-                validObjects.push({
-                    ...object,
-                    translatedTitle,
-                    translatedCulture,
-                    translatedDynasty
-                });
+                validObjects.push(object);
                 loadedItems++;
             }
         } catch (error) {
             console.error(`Error al obtener el objeto ${objectId}:`, error);
-            continue; // Ignorar errores al obtener objetos individuales
+            continue;
         }
     }
 
-    // Crear las cards para los objetos válidos
-    validObjects.forEach((object) => {
-        const card = createCard(object);
-        gallery.appendChild(card); // Añadir la card a la galería
+    // Mostrar los objetos filtrados en la galería
+    validObjects.forEach(async (object) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+
+        // Imagen del objeto o imagen por defecto
+        const img = document.createElement('img');
+        img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+        img.alt = object.title || 'Imagen no disponible';
+        card.appendChild(img);
+
+        const title = document.createElement('p');
+        title.classList.add('card-title');
+        const tituloTraducido = await translateText(object.title,"es");
+        title.textContent = tituloTraducido || 'Sin título';
+        card.appendChild(title);
+
+        const culture = document.createElement('p');
+        const culturaTraducida = await translateText(object.culture ,"es");
+        culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
+        card.appendChild(culture);
+
+        const dynasty = document.createElement('p');
+        const dinastiaTraducida = await translateText(object.dynasty,"es");
+        dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
+        card.appendChild(dynasty);
+
+        const date = document.createElement('div');
+        date.classList.add('card-date');
+        date.textContent = object.objectDate || 'Fecha desconocida';
+        card.appendChild(date);
+
+        gallery.appendChild(card);
     });
 
-    hideLoader(); // Ocultar loader una vez se han cargado los resultados
+    createPagination(objectIDs.length, page, pageSize);
 
 }
 
+//Función para crear paginación
+function createPagination(totalItems, currentPage, pageSize) {
+    const paginationContainer = document.querySelector('.pagination');
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    if (totalPages > 1) {
+        const maxVisibleButtons = 10;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+
+        if (endPage - startPage < maxVisibleButtons - 1) {
+            startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+        }
+
+        if (currentPage > 1) {
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Anterior';
+            prevButton.onclick = () => displayResults(objectIDs, '', currentPage - 1, pageSize);
+            paginationContainer.appendChild(prevButton);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.onclick = () => displayResults(objectIDs, '', i, pageSize);
+            paginationContainer.appendChild(pageButton);
+        }
+
+        if (currentPage < totalPages) {
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Siguiente';
+            nextButton.onclick = () => displayResults(objectIDs, '', currentPage + 1, pageSize);
+            paginationContainer.appendChild(nextButton);
+        }
+    }
+}
+
 //Función para mostrar cada página de 20 resultados
+
 function displayPage(page) {
     showLoader();
 
@@ -197,7 +193,7 @@ function displayPage(page) {
     hideLoader();
 }
 
-//Función para mostrar los números de la paginación
+//Función para mostrar la paginación
 function displayPagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = ''; // Limpiar la paginación
@@ -276,7 +272,7 @@ function hideLoader() {
     }
 }
 
-//Función para hacer la búsqueda según los parámetros / filtros seleccionados con localización
+//Función para hacer la búsqueda según los parámetros / filtros seleccionados
 async function searchObjects(event) {
     event.preventDefault();
 
@@ -294,18 +290,12 @@ async function searchObjects(event) {
         url += `&departmentId=${departamento}`;
     }
 
-    if (localizacion) {
-        url += `&geoLocation=${encodeURIComponent(localizacion)}`;
-    }
-
     // Realizar búsqueda
     const response = await fetch(url);
     const data = await response.json();
 
     allObjects = data.objectIDs || []; //arreglo con todos los objetos obtenidos
     console.log("Total de objetos devueltos:", allObjects.length); // Verificar la cantidad de objetos
-    console.log("ID Objetos: ",data.objectIDs);
-    console.log("HOLAA-CHAU");
 
     if (allObjects.length === 0) {
         alert('No se encontraron objetos que coincidan con la búsqueda.');
@@ -339,8 +329,8 @@ async function searchObjects(event) {
 //     }
 // }
 
-// Función para traducir texto usando node-google-translate-skidz
-// async function translateText(text, targetLanguage) {
+// // Función para traducir texto usando node-google-translate-skidz
+// async function translateText(text, targetLanguage = 'es') {
 //     return new Promise((resolve, reject) => {
 //         translate({
 //             text: text,
@@ -356,37 +346,30 @@ async function searchObjects(event) {
 //     });
 // }
 
-async function translateText(text, targetLanguage) {
+//la de un compañero https://github.com/calderon104/museo/blob/main/public/script.js
+async function translateText(text, targetLang) {
     try {
-        const response = await fetch('http://localhost:3000/translate', {  // Asegúrate de incluir http://
+        const response = await fetch('/translate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ text, targetLanguage })  // JSON bien formateado
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, targetLang: targetLang })
         });
-
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud al servidor: ${response.statusText}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
-        if (data.translation) {
-            console.log('Traducción:', data.translation);
-            return data.translation;
-        } else {
-            console.error('Error en la traducción:', data.error);
-        }
+        return data.translatedText || text;
     } catch (error) {
-        console.error('Error en la solicitud de traducción:', error);
+        console.error('Error al traducir texto:', error);
+        return text; // Devuelve el texto original en caso de error
     }
-}
+  }
 
-
-// Ejemplo de uso
-translateText('Hello world', 'es');
+// Iniciar el servidor
+// app.listen(port, () => {
+//     console.log(`Servidor corriendo en http://localhost:${port}`);
+// });
 
 
 // Inicializar
+
 document.getElementById('searchForm').addEventListener('submit', searchObjects);
 loadDepartments();
