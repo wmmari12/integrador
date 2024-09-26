@@ -1,26 +1,26 @@
-const baseURL = "https://collectionapi.metmuseum.org/public/collection/v1";
-let allObjects = []; // Aquí guardamos todos los objetos recuperados
+const baseURL = "https://collectionapi.metmuseum.org/public/collection/v1"; //API Museo
+let allObjects = []; // Acá guardo todos los objetos recuperados
 let currentPage = 1; // Página actual
 const itemsPerPage = 20; // Cantidad de objetos por página
 let currentPageBlock = 1; // Bloque de 10 páginas actual
 const maxPagesToShow = 10; // Máximo de botones de paginación visibles a la vez
 
-// Función para cargar departamentos en el select
+// Función para cargar departamentos en el select 
 async function loadDepartments() {
     const response = await fetch(`${baseURL}/departments`);
     const data = await response.json();
     const departamentoSelect = document.getElementById('departamento');
 
-    // Crear y agregar la opción "Todos" al principio del select
+    // Crear y agregar la opción "Todos" al principio del select de departamentos
     const optionTodos = document.createElement('option');
     optionTodos.value = ""; // El valor vacío indicará que no hay filtro por departamento
     optionTodos.textContent = "Todos";
     departamentoSelect.appendChild(optionTodos);
 
-    // Ordenar departamentos alfabéticamente
+    // Ordeno departamentos alfabéticamente
     data.departments.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-    // Añadir departamentos al select
+    // Agrego los departamentos al select
     data.departments.forEach(dept => {
         const option = document.createElement('option');
         option.value = dept.departmentId;
@@ -58,7 +58,7 @@ function closeModal() {
 const closeButton = document.querySelector(".close");
 closeButton.addEventListener('click', closeModal);
 
-// Cerrar el modal si el usuario hace clic fuera de la caja del modal
+// Cerrar el modal si se hace clic fuera de la caja del modal
 window.onclick = function (event) {
     const modal = document.getElementById("additionalImagesModal");
     if (event.target == modal) {
@@ -66,81 +66,43 @@ window.onclick = function (event) {
     }
 }
 
-//Funciòn para crear las cards con un botòn de imagenes adicionales funcionando
-// async function createCard(object) {
-//     const card = document.createElement('div');
-//     card.classList.add('card');
-
-//     const img = document.createElement('img');
-//     img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
-//     img.alt = object.title || 'Imagen no disponible';
-//     card.appendChild(img);
-
-//     const title = document.createElement('p');
-//     title.classList.add('card-title');
-//     const tituloTraducido = await translateText(object.title, "es");
-//     title.textContent = tituloTraducido || 'Sin título';
-//     card.appendChild(title);
-
-//     const culture = document.createElement('p');
-//     const culturaTraducida = await translateText(object.culture, "es");
-//     culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
-//     card.appendChild(culture);
-
-//     const dynasty = document.createElement('p');
-//     const dinastiaTraducida = await translateText(object.dynasty, "es");
-//     dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
-//     card.appendChild(dynasty);
-
-//     const date = document.createElement('div');
-//     date.classList.add('card-date');
-//     date.textContent = object.objectDate || 'Fecha desconocida';
-//     card.appendChild(date);
-
-//     // Mostrar botón si hay imágenes adicionales
-//     if (object.additionalImages && object.additionalImages.length > 0) {
-//         const additionalImagesButton = document.createElement('button');
-//         additionalImagesButton.textContent = "Ver imágenes adicionales";
-//         additionalImagesButton.addEventListener('click', () => {
-//             openModal(object.additionalImages);
-//         });
-//         card.appendChild(additionalImagesButton);
-//     }
-
-//     return card;
-// }
-
+// Función que crea las cards de cada página, con los datos traducidos y el botón Ver imágenes Adicionales
 async function createCard(object) {
     const card = document.createElement('div');
     card.classList.add('card');
 
+    //Muestro la img y si no tiene pongo una por defecto
     const img = document.createElement('img');
     img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
     img.alt = object.title || 'Imagen no disponible';
     card.appendChild(img);
 
+    //Muestro el título del objeto, traducido
     const title = document.createElement('p');
     title.classList.add('card-title');
     const tituloTraducido = await translateText(object.title, "es");
     title.textContent = tituloTraducido || 'Sin título';
     card.appendChild(title);
 
+    //Muestro la culture del objeto, traducida
     const culture = document.createElement('p');
     const culturaTraducida = await translateText(object.culture, "es");
     culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
     card.appendChild(culture);
 
+    //Muestro la dynasy del objeto, traducida
     const dynasty = document.createElement('p');
     const dinastiaTraducida = await translateText(object.dynasty, "es");
     dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
     card.appendChild(dynasty);
 
+    //Muestro la fecha para que se muestre al pasar el mouse encima
     const date = document.createElement('div');
     date.classList.add('card-date');
     date.textContent = object.objectDate || 'Fecha desconocida';
     card.appendChild(date);
 
-    // Mostrar botón si hay imágenes adicionales
+    // Mostrar botón solo si hay imágenes adicionales
     if (object.additionalImages && object.additionalImages.length > 0) {
         const additionalImagesButton = document.createElement('button');
         additionalImagesButton.textContent = "Ver imágenes adicionales";
@@ -153,117 +115,7 @@ async function createCard(object) {
     return card;
 }
 
-
-// Función para mostrar reusltados funciona pero no muestra img adicionales
-// async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
-//     const gallery = document.querySelector('.gallery');
-//     const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
-//     gallery.innerHTML = ''; // Limpiar la galería de resultados anteriores
-//     paginationContainer.innerHTML = ''; // Limpiar la paginación anterior
-
-//     showLoader(); // Mostrar el loader antes de comenzar la búsqueda
-
-//     let validObjects = []; // Array para almacenar los objetos filtrados
-//     let index = (page - 1) * pageSize; // Índice inicial de la página actual
-//     let loadedItems = 0; // Contador de objetos cargados en la página actual
-
-//     const keywordLowerCase = keyword.toLowerCase();
-
-//     // Continuar buscando objetos hasta completar el número necesario o llegar al final de la lista
-//     while (loadedItems < pageSize && index < objectIDs.length) {
-//         const objectId = objectIDs[index];
-//         index++; // Avanzar el índice
-
-//         try {
-//             const response = await fetch(`${baseURL}/objects/${objectId}`);
-
-//             // Verificar si la respuesta no fue exitosa (ej. 404)
-//             if (!response.ok) {
-//                 //console.log(`Error ${response.status} para el objeto ${objectId}`);
-//                 continue; // Saltar este objeto y continuar con los siguientes
-//             }
-
-//             const object = await response.json();
-
-//             if (object.message) {
-//                 //console.log(`Objeto no válido: ${objectId}`);
-//                 continue; // Saltar este objeto y continuar con los siguientes
-//             }
-
-//             // Filtrar por keyword solo en los campos title, culture y dynasty
-//             let matchesKeyword = false;
-//             if (object.title && object.title.toLowerCase().includes(keywordLowerCase)) {
-//                 matchesKeyword = true;
-//             }
-//             if (object.culture && object.culture.toLowerCase().includes(keywordLowerCase)) {
-//                 matchesKeyword = true;
-//             }
-//             if (object.dynasty && object.dynasty.toLowerCase().includes(keywordLowerCase)) {
-//                 matchesKeyword = true;
-//             }
-
-//             if (!keyword || matchesKeyword) {
-//                 validObjects.push(object);
-//                 loadedItems++;
-//             }
-//         } catch (error) {
-//             console.error(`Error al obtener el objeto ${objectId}:`, error);
-//             continue;
-//         }
-//     }
-
-//     // Mostrar los objetos filtrados en la galería
-//     validObjects.forEach((object) => {
-//         const card = createCard(object);
-//         gallery.appendChild(card); // Añadir la card a la galería
-//     });
-
-//     // // Mostrar los objetos filtrados en la galería
-//     // validObjects.forEach(async (object) => {
-//     //     const card = document.createElement('div');
-//     //     card.classList.add('card');
-
-//     //     // Imagen del objeto o imagen por defecto
-//     //     const img = document.createElement('img');
-//     //     img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
-//     //     img.alt = object.title || 'Imagen no disponible';
-//     //     card.appendChild(img);
-
-//     //     const title = document.createElement('p');
-//     //     title.classList.add('card-title');
-//     //     const tituloTraducido = await translateText(object.title,"es");
-//     //     title.textContent = tituloTraducido || 'Sin título';
-//     //     card.appendChild(title);
-
-//     //     const culture = document.createElement('p');
-//     //     const culturaTraducida = await translateText(object.culture ,"es");
-//     //     culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
-//     //     card.appendChild(culture);
-
-//     //     const dynasty = document.createElement('p');
-//     //     const dinastiaTraducida = await translateText(object.dynasty,"es");
-//     //     dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
-//     //     card.appendChild(dynasty);
-
-//     //     const date = document.createElement('div');
-//     //     date.classList.add('card-date');
-//     //     date.textContent = object.objectDate || 'Fecha desconocida';
-//     //     card.appendChild(date);
-
-//     //     gallery.appendChild(card);
-
-
-//     // });
-
-//     // createPagination(objectIDs.length, page, pageSize);
-
-//     // Crear la paginación si hay más resultados que el tamaño de la página
-//     if (objectIDs.length > pageSize) {
-//         createPagination(objectIDs.length, page, pageSize);
-//     }
-
-// }
-
+//Función que devuelve los resultados de la búsqueda según los filtros aplicados.
 async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
     const gallery = document.querySelector('.gallery');
     const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
@@ -283,7 +135,7 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
         const objectId = objectIDs[index];
         index++; // Avanzar el índice
 
-        try {
+        try { //agrego el id de cada objeto a la búsqueda de la api para tener todos su datos
             const response = await fetch(`${baseURL}/objects/${objectId}`);
 
             // Verificar si la respuesta no fue exitosa (ej. 404)
@@ -353,7 +205,7 @@ function displayPage(page) {
     hideLoader();
 }
 
-//Función para mostrar los nùmeros de la paginación
+//Función para mostrar los números de la paginación
 function displayPagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = ''; // Limpiar la paginación
@@ -416,9 +268,6 @@ function showLoader() {
     if (loader) {
         loader.style.display = 'block';  // Mostrar el loader
     }
-    // else {
-    //     console.error('El loader no se encontró en el DOM');
-    // }
 }
 
 //Función para ocultar el loader
@@ -426,9 +275,6 @@ function hideLoader() {
     const loader = document.getElementById('loader');
     if (loader) {
         loader.style.display = 'none';  // Ocultar el loader
-        // } else {
-        //     console.error('El loader no se encontró en el DOM');
-        // 
     }
 }
 
@@ -474,7 +320,7 @@ async function searchObjects(event) {
     displayPage(currentPage);
 }
 
-//la de un compañero https://github.com/calderon104/museo/blob/main/public/script.js
+//Función para traducir
 async function translateText(text, targetLang) {
     try {
         const response = await fetch('/translate', {
