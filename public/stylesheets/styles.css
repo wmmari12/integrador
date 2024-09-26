@@ -15,6 +15,10 @@ section {
     padding: 20px;
 }
 
+#filtros{
+    background-color: #969494; 
+}
+
 form {
     display: flex;
     text-align: center;
@@ -123,7 +127,7 @@ input, select, button, label {
 }
 
 .gallery img {
-  width: 100px;
+  width: 100%;
   height: auto;
   margin: 5px;
 }

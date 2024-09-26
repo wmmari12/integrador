@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Integrador Web II - Flores Mariana</title>
     <link rel="stylesheet" href="stylesheets/styles.css">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 </head>
+
 <body>
     <header>
         <h1>Búsqueda de Obras de Arte</h1>
     </header>
 
-    <section>
+    <section id="filtros">
         <form id="searchForm">
-            <label for="departamento">Departamento:</label>
+            <!-- <label for="departamento">Departamento:</label> -->
             <select id="departamento">
                 <!-- Opciones serán añadidas dinámicamente -->
             </select>
@@ -30,11 +34,9 @@
                 <option value="South America">Sudamérica</option>
                 <option value="Oceania">Oceanía</option>
             </select>
-            
-           
 
-<!-- Div para mostrar los resultados filtrados -->
-<div id="results-container"></div>
+            <!-- Div para mostrar los resultados filtrados -->
+            <div id="results-container"></div>
 
             <button type="submit">Buscar</button>
         </form>
@@ -48,19 +50,20 @@
 
         </div>
         <div id="pagination" class="pagination">
-             <!-- Controles de paginación  -->
+            <!-- Controles de paginación  -->
         </div>
     </section>
 
     <!-- Modal para ver imágenes adicionales -->
     <div id="additionalImagesModal" class="modal">
         <div class="modal-content">
-        <span class="close">&times;</span>
-        <div id="additionalImagesGallery" class="gallery"></div>
+            <span class="close">&times;</span>
+            <div id="additionalImagesGallery" class="gallery"></div>
         </div>
     </div>
 
-    <script src="javascripts/script.js"></script>
-   
+    <script type="module" src="javascripts/script.js"></script>
+
 </body>
+
 </html>

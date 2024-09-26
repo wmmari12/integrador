@@ -5,6 +5,7 @@ const itemsPerPage = 20; // Cantidad de objetos por página
 let currentPageBlock = 1; // Bloque de 10 páginas actual
 const maxPagesToShow = 10; // Máximo de botones de paginación visibles a la vez
 
+
 // Función para cargar departamentos en el select 
 async function loadDepartments() {
     const response = await fetch(`${baseURL}/departments`);
@@ -14,7 +15,7 @@ async function loadDepartments() {
     // Crear y agregar la opción "Todos" al principio del select de departamentos
     const optionTodos = document.createElement('option');
     optionTodos.value = ""; // El valor vacío indicará que no hay filtro por departamento
-    optionTodos.textContent = "Todos";
+    optionTodos.textContent = "Seleccione un Departamento";
     departamentoSelect.appendChild(optionTodos);
 
     // Ordeno departamentos alfabéticamente
@@ -309,7 +310,13 @@ async function searchObjects(event) {
     console.log("Total de objetos devueltos:", allObjects.length); // Verificar la cantidad de objetos
 
     if (allObjects.length === 0) {
-        alert('No se encontraron objetos que coincidan con la búsqueda.');
+        swal({
+            title: "Ups!",
+            text: "No se encontraron objetos que coincidan con la búsqueda!",
+            icon: "warning",
+            button: "Volver a buscar!",
+          });
+        // alert('No se encontraron objetos que coincidan con la búsqueda.');
         hideLoader();
         return;
     }
