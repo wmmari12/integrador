@@ -272,7 +272,7 @@ function hideLoader() {
     }
 }
 
-//Función para hacer la búsqueda según los parámetros / filtros seleccionados
+//Función para hacer la búsqueda según los parámetros / filtros seleccionados con localización
 async function searchObjects(event) {
     event.preventDefault();
 
@@ -290,12 +290,18 @@ async function searchObjects(event) {
         url += `&departmentId=${departamento}`;
     }
 
+    if (localizacion) {
+        url += `&geoLocation=${encodeURIComponent(localizacion)}`;
+    }
+
     // Realizar búsqueda
     const response = await fetch(url);
     const data = await response.json();
 
     allObjects = data.objectIDs || []; //arreglo con todos los objetos obtenidos
     console.log("Total de objetos devueltos:", allObjects.length); // Verificar la cantidad de objetos
+    console.log("ID Objetos: ",data.objectIDs);
+    console.log("HOLAA-CHAU");
 
     if (allObjects.length === 0) {
         alert('No se encontraron objetos que coincidan con la búsqueda.');
