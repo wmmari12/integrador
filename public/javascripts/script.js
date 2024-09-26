@@ -1,10 +1,3 @@
-//const express = require('express');
-// const fetch = require('node-fetch');
-//const translate = require('node-google-translate-skidz');
-
-// const app = express();
-// const port = 3000;
-
 const baseURL = "https://collectionapi.metmuseum.org/public/collection/v1";
 let allObjects = []; // Aquí guardamos todos los objetos recuperados
 let currentPage = 1; // Página actual
@@ -12,29 +5,60 @@ const itemsPerPage = 20; // Cantidad de objetos por página
 let currentPageBlock = 1; // Bloque de 10 páginas actual
 const maxPagesToShow = 10; // Máximo de botones de paginación visibles a la vez
 
-
 // Función para cargar departamentos en el select
 async function loadDepartments() {
-    const response = await fetch(`${baseURL}/departments`);
-    const data = await response.json();
-    const departamentoSelect = document.getElementById('departamento');
+}
 
-    // Crear y agregar la opción "Todos" al principio del select
-    const optionTodos = document.createElement('option');
-    optionTodos.value = ""; // El valor vacío indicará que no hay filtro por departamento
-    optionTodos.textContent = "Todos";
-    departamentoSelect.appendChild(optionTodos);
+// Función para abrir el modal con imágenes adicionales
+function openModal(images) {
+}
 
-    // Ordenar departamentos alfabéticamente
-    data.departments.sort((a, b) => a.displayName.localeCompare(b.displayName));
+// Función para cerrar el modal
+function closeModal() {
+    const modal = document.getElementById("additionalImagesModal");
+    modal.style.display = "none";
+}
 
-    // Añadir departamentos al select
-    data.departments.forEach(dept => {
-        const option = document.createElement('option');
-        option.value = dept.departmentId;
-        option.textContent = dept.displayName;
-        departamentoSelect.appendChild(option);
-    });
+// Obtener el botón de cerrar el modal
+const closeButton = document.querySelector(".close");
+closeButton.addEventListener('click', closeModal);
+
+// Cerrar el modal si el usuario hace clic fuera de la caja del modal
+window.onclick = function(event) {
+}
+
+//Funciòn para crear las cards con un botón de imagenes adicionales                
+
+function createCard(object) {
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    const img = document.createElement('img');
+    img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+    img.alt = object.title || 'Imagen no disponible';
+    card.appendChild(img);
+
+    const title = document.createElement('p');
+    title.classList.add('card-title');
+    title.textContent = object.translatedTitle;
+    card.appendChild(title);
+
+    const info = document.createElement('p');
+    info.textContent = `${object.translatedCulture} - ${object.translatedDynasty}`;
+    card.appendChild(info);
+
+
+    // Mostrar botón si hay imágenes adicionales
+    if (object.additionalImages && object.additionalImages.length > 0) {
+        const additionalImagesButton = document.createElement('button');
+        additionalImagesButton.textContent = "Ver imágenes adicionales";
+        additionalImagesButton.addEventListener('click', () => {
+            openModal(object.additionalImages);
+        });
+        card.appendChild(additionalImagesButton);
+    }
+
+    return card;
 }
 
 // Función para mostrar reusltados
@@ -134,48 +158,7 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
 
 }
 
-//Función para crear paginación
-function createPagination(totalItems, currentPage, pageSize) {
-    const paginationContainer = document.querySelector('.pagination');
-    const totalPages = Math.ceil(totalItems / pageSize);
-
-    if (totalPages > 1) {
-        const maxVisibleButtons = 10;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
-
-        if (endPage - startPage < maxVisibleButtons - 1) {
-            startPage = Math.max(1, endPage - maxVisibleButtons + 1);
-        }
-
-        if (currentPage > 1) {
-            const prevButton = document.createElement('button');
-            prevButton.textContent = 'Anterior';
-            prevButton.onclick = () => displayResults(objectIDs, '', currentPage - 1, pageSize);
-            paginationContainer.appendChild(prevButton);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            if (i === currentPage) {
-                pageButton.classList.add('active');
-            }
-            pageButton.onclick = () => displayResults(objectIDs, '', i, pageSize);
-            paginationContainer.appendChild(pageButton);
-        }
-
-        if (currentPage < totalPages) {
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Siguiente';
-            nextButton.onclick = () => displayResults(objectIDs, '', currentPage + 1, pageSize);
-            paginationContainer.appendChild(nextButton);
-        }
-    }
-}
-
 //Función para mostrar cada página de 20 resultados
-
 function displayPage(page) {
     showLoader();
 
@@ -193,7 +176,7 @@ function displayPage(page) {
     hideLoader();
 }
 
-//Función para mostrar la paginación
+//Función para mostrar los números de la paginación
 function displayPagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = ''; // Limpiar la paginación
@@ -335,8 +318,8 @@ async function searchObjects(event) {
 //     }
 // }
 
-// // Función para traducir texto usando node-google-translate-skidz
-// async function translateText(text, targetLanguage = 'es') {
+// Función para traducir texto usando node-google-translate-skidz
+// async function translateText(text, targetLanguage) {
 //     return new Promise((resolve, reject) => {
 //         translate({
 //             text: text,
@@ -352,30 +335,37 @@ async function searchObjects(event) {
 //     });
 // }
 
-//la de un compañero https://github.com/calderon104/museo/blob/main/public/script.js
-async function translateText(text, targetLang) {
+async function translateText(text, targetLanguage) {
     try {
-        const response = await fetch('/translate', {
+        const response = await fetch('http://localhost:3000/translate', {  // Asegúrate de incluir http://
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, targetLang: targetLang })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text, targetLanguage })  // JSON bien formateado
         });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const data = await response.json();
-        return data.translatedText || text;
-    } catch (error) {
-        console.error('Error al traducir texto:', error);
-        return text; // Devuelve el texto original en caso de error
-    }
-  }
 
-// Iniciar el servidor
-// app.listen(port, () => {
-//     console.log(`Servidor corriendo en http://localhost:${port}`);
-// });
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud al servidor: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (data.translation) {
+            console.log('Traducción:', data.translation);
+            return data.translation;
+        } else {
+            console.error('Error en la traducción:', data.error);
+        }
+    } catch (error) {
+        console.error('Error en la solicitud de traducción:', error);
+    }
+}
+
+
+// Ejemplo de uso
+translateText('Hello world', 'es');
 
 
 // Inicializar
-
 document.getElementById('searchForm').addEventListener('submit', searchObjects);
 loadDepartments();
