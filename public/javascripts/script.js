@@ -7,11 +7,47 @@ const maxPagesToShow = 10; // Máximo de botones de paginación visibles a la ve
 
 // Función para cargar departamentos en el select
 async function loadDepartments() {
+    const response = await fetch(`${baseURL}/departments`);
+    const data = await response.json();
+    const departamentoSelect = document.getElementById('departamento');
+
+    // Crear y agregar la opción "Todos" al principio del select
+    const optionTodos = document.createElement('option');
+    optionTodos.value = ""; // El valor vacío indicará que no hay filtro por departamento
+    optionTodos.textContent = "Todos";
+    departamentoSelect.appendChild(optionTodos);
+
+    // Ordenar departamentos alfabéticamente
+    data.departments.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+    // Añadir departamentos al select
+    data.departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.departmentId;
+        option.textContent = dept.displayName;
+        departamentoSelect.appendChild(option);
+    });
 }
 
 // Función para abrir el modal con imágenes adicionales
 function openModal(images) {
+    const modal = document.getElementById("additionalImagesModal");
+    const gallery = document.getElementById("additionalImagesGallery");
+
+    // Limpiar la galería antes de mostrar nuevas imágenes
+    gallery.innerHTML = '';
+
+    // Agregar cada imagen al modal
+    images.forEach(imageUrl => {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        gallery.appendChild(img);
+    });
+
+    // Mostrar el modal
+    modal.style.display = "block";
 }
+
 
 // Función para cerrar el modal
 function closeModal() {
@@ -25,6 +61,10 @@ closeButton.addEventListener('click', closeModal);
 
 // Cerrar el modal si el usuario hace clic fuera de la caja del modal
 window.onclick = function(event) {
+    const modal = document.getElementById("additionalImagesModal");
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
 }
 
 //Funciòn para crear las cards con un botón de imagenes adicionales                
@@ -283,8 +323,7 @@ async function searchObjects(event) {
 
     allObjects = data.objectIDs || []; //arreglo con todos los objetos obtenidos
     console.log("Total de objetos devueltos:", allObjects.length); // Verificar la cantidad de objetos
-    console.log("ID Objetos: ",data.objectIDs);
-    console.log("HOLAA-CHAU");
+    //console.log("ID Objetos: ",data.objectIDs);
 
     if (allObjects.length === 0) {
         alert('No se encontraron objetos que coincidan con la búsqueda.');
@@ -337,7 +376,7 @@ async function searchObjects(event) {
 
 async function translateText(text, targetLanguage) {
     try {
-        const response = await fetch('http://localhost:3000/translate', {  // Asegúrate de incluir http://
+        const response = await fetch('/translate', {  // Asegúrate de incluir http://
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
