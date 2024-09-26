@@ -22,10 +22,11 @@ async function loadDepartments() {
     data.departments.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
     // Agrego los departamentos al select
-    data.departments.forEach(dept => {
+    data.departments.forEach(async dept => {
         const option = document.createElement('option');
         option.value = dept.departmentId;
-        option.textContent = dept.displayName;
+        const deptoTraducido = await translateText(dept.displayName, "es");
+        option.textContent = deptoTraducido;
         departamentoSelect.appendChild(option);
     });
 }
