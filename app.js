@@ -21,10 +21,8 @@ const translate = require('node-google-translate-skidz');
 //   console.log(result.translation); 
 // });
 
-//trducir texto https://github.com/calderon104/museo/blob/main/app.js
+//traducir texto https://github.com/calderon104/museo/blob/main/app.js
 app.post('/translate', (req, res) => {
-  //console.log("en el post de traducir");
-  //console.log(req.body); // Verifica qué datos llegan
   const { text, targetLang } = req.body;
 
   if (!text || !targetLang) {

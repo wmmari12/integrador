@@ -316,7 +316,6 @@ async function searchObjects(event) {
             icon: "warning",
             button: "Volver a buscar!",
           });
-        // alert('No se encontraron objetos que coincidan con la búsqueda.');
         hideLoader();
         return;
     }
