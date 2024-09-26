@@ -12,16 +12,8 @@ var app = express();
 const port = 3000
 app.use(express.json());
 const translate = require('node-google-translate-skidz');
-//ANDA EL TRADUCTOR
-// translate({
-//   text: 'Hello world one and two!',
-//   source: 'en',
-//   target: 'es'
-// }, (result) => {
-//   console.log(result.translation); 
-// });
 
-//traducir texto https://github.com/calderon104/museo/blob/main/app.js
+//traducir texto
 app.post('/translate', (req, res) => {
   const { text, targetLang } = req.body;
 
