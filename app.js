@@ -23,8 +23,8 @@ const translate = require('node-google-translate-skidz');
 
 //trducir texto https://github.com/calderon104/museo/blob/main/app.js
 app.post('/translate', (req, res) => {
-  console.log("en el post de traducir");
-  console.log(req.body); // Verifica qué datos llegan
+  //console.log("en el post de traducir");
+  //console.log(req.body); // Verifica qué datos llegan
   const { text, targetLang } = req.body;
 
   if (!text || !targetLang) {
@@ -37,7 +37,7 @@ app.post('/translate', (req, res) => {
     target: targetLang,
   }, (result) => {
 
-    console.log("el resultado de la traduccion es: " + result); // Muestra el resultado de la traducción para depuración
+    //console.log("el resultado de la traduccion es: " + result); // Muestra el resultado de la traducción para depuración
     if (result && result.translation) {
       res.json({ translatedText: result.translation });
     } else {

@@ -36,7 +36,7 @@ function openModal(images) {
 
     // Limpiar la galería antes de mostrar nuevas imágenes
     gallery.innerHTML = '';
-
+    
     // Agregar cada imagen al modal
     images.forEach(imageUrl => {
         const img = document.createElement('img');
@@ -47,7 +47,6 @@ function openModal(images) {
     // Mostrar el modal
     modal.style.display = "block";
 }
-
 
 // Función para cerrar el modal
 function closeModal() {
@@ -67,8 +66,7 @@ window.onclick = function(event) {
     }
 }
 
-//Funciòn para crear las cards con un botón de imagenes adicionales                
-
+//Funciòn para crear las cards con un botòn de imagenes adicionales
 function createCard(object) {
     const card = document.createElement('div');
     card.classList.add('card');
@@ -86,7 +84,6 @@ function createCard(object) {
     const info = document.createElement('p');
     info.textContent = `${object.translatedCulture} - ${object.translatedDynasty}`;
     card.appendChild(info);
-
 
     // Mostrar botón si hay imágenes adicionales
     if (object.additionalImages && object.additionalImages.length > 0) {
@@ -192,8 +189,10 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
         card.appendChild(date);
 
         gallery.appendChild(card);
-    });
 
+        
+    });
+   
     createPagination(objectIDs.length, page, pageSize);
 
 }
@@ -216,7 +215,7 @@ function displayPage(page) {
     hideLoader();
 }
 
-//Función para mostrar los números de la paginación
+//Función para mostrar los nùmeros de la paginación
 function displayPagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = ''; // Limpiar la paginación
@@ -295,8 +294,8 @@ function hideLoader() {
     }
 }
 
-//Función para hacer la búsqueda según los parámetros / filtros seleccionados con localización
-async function searchObjects(event) {
+//Función para hacer la búsqueda según los parámetros / filtros seleccionados con localizaciòn
+async function searchObjects(event) { 
     event.preventDefault();
 
     // Mostrar el loader antes de iniciar la búsqueda
@@ -313,6 +312,7 @@ async function searchObjects(event) {
         url += `&departmentId=${departamento}`;
     }
 
+    //Filtrar por localización si está seleccionada
     if (localizacion) {
         url += `&geoLocation=${encodeURIComponent(localizacion)}`;
     }
@@ -323,7 +323,6 @@ async function searchObjects(event) {
 
     allObjects = data.objectIDs || []; //arreglo con todos los objetos obtenidos
     console.log("Total de objetos devueltos:", allObjects.length); // Verificar la cantidad de objetos
-    //console.log("ID Objetos: ",data.objectIDs);
 
     if (allObjects.length === 0) {
         alert('No se encontraron objetos que coincidan con la búsqueda.');
@@ -337,74 +336,24 @@ async function searchObjects(event) {
     displayPage(currentPage);
 }
 
-
-// Función para traducir texto utilizando node-google-translate-skidz
-//Función para traducir títulos, culture y dynasty
-// async function translateText(text, targetLang) {
-//     try {
-//         const response = await fetch('/translate', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({ text: text, targetLang: targetLang })
-//         });
-//         const result = await response.json();
-//         return result.translatedText;
-//     } catch (error) {
-//         console.error('Error al traducir el texto:', error);
-//         return text; // Devuelve el texto original si hay un error
-//     }
-// }
-
-// Función para traducir texto usando node-google-translate-skidz
-// async function translateText(text, targetLanguage) {
-//     return new Promise((resolve, reject) => {
-//         translate({
-//             text: text,
-//             source: 'en',
-//             target: targetLanguage
-//         }, function(result) {
-//             if (result && result.translation) {
-//                 resolve(result.translation);
-//             } else {
-//                 reject('Error al traducir');
-//             }
-//         });
-//     });
-// }
-
-async function translateText(text, targetLanguage) {
+//la de un compañero https://github.com/calderon104/museo/blob/main/public/script.js
+async function translateText(text, targetLang) {
     try {
-        const response = await fetch('/translate', {  // Asegúrate de incluir http://
+        const response = await fetch('/translate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ text, targetLanguage })  // JSON bien formateado
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, targetLang: targetLang })
         });
-
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud al servidor: ${response.statusText}`);
-        }
-
+        //if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
-        if (data.translation) {
-            console.log('Traducción:', data.translation);
-            return data.translation;
-        } else {
-            console.error('Error en la traducción:', data.error);
-        }
+        return data.translatedText || text;
     } catch (error) {
-        console.error('Error en la solicitud de traducción:', error);
+        console.error('Error al traducir texto:', error);
+        return text; // Devuelve el texto original en caso de error
     }
-}
-
-
-// Ejemplo de uso
-translateText('Hello world', 'es');
-
+  }
 
 // Inicializar
+
 document.getElementById('searchForm').addEventListener('submit', searchObjects);
 loadDepartments();
