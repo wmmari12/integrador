@@ -15,7 +15,7 @@ async function loadDepartments() {
     // Crear y agregar la opción "Todos" al principio del select de departamentos
     const optionTodos = document.createElement('option');
     optionTodos.value = ""; // El valor vacío indicará que no hay filtro por departamento
-    optionTodos.textContent = "Seleccione un Departamento";
+    optionTodos.textContent = "Departamentos";
     departamentoSelect.appendChild(optionTodos);
 
     // Ordeno departamentos alfabéticamente
