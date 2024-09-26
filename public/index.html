@@ -18,11 +18,19 @@
                 <!-- Opciones serán añadidas dinámicamente -->
             </select>
 
-            <label for="keyword">Palabra clave:</label>
-            <input type="text" id="keyword" placeholder="Buscar por palabra clave...">
+            <!-- <label for="keyword">Palabra clave:</label> -->
+            <input type="text" id="keyword" placeholder="Palabra clave...">
 
-             <label for="localizacion">Localización:</label>
-            <input type="text" id="localizacion" placeholder="Ciudad, estado, país..."> 
+            <select id="localizacion">
+                <option value="">Seleccione una Localización</option>
+                <option value="Europe">Europa</option>
+                <option value="Asia">Asia</option>
+                <option value="Africa">África</option>
+                <option value="North America">Norteamérica</option>
+                <option value="South America">Sudamérica</option>
+                <option value="Oceania">Oceanía</option>
+            </select>
+            
            
 
 <!-- Div para mostrar los resultados filtrados -->

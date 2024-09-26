@@ -1,6 +1,7 @@
 var createError = require('http-errors');
-var express = require('express');
 var path = require('path');
+const express = require('express');
+const translate = require('node-google-translate-skidz');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const axios = require('axios');
@@ -8,125 +9,63 @@ const axios = require('axios');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-var app = express();
-const port = 3000
+const app = express();
+const PORT = 3000;
 
-const translate = require('node-google-translate-skidz');
-translate({
-  text: 'Hello world one!',
-  source: 'en',
-  target: 'es'
-}, (result) => {
-  console.log(result.translation); 
+app.use(express.json());
+
+// Ruta para traducir texto
+app.post('/translate', async (req, res) => {
+    const { text, targetLanguage } = req.body;
+
+    if (!text || !targetLanguage) {
+        return res.status(400).json({ error: 'Faltan parámetros: text o targetLanguage' });
+    }
+
+    try {
+        // Lógica de traducción con captura de errores
+        translate({
+            text: text,
+            source: 'en',
+            target: targetLanguage
+        }, function(result) {
+            if (result && result.translation) {
+                return res.json({ translation: result.translation });
+            } else {
+                console.error('Error en la respuesta de traducción:', result);  // Imprimir detalles del error
+                return res.status(500).json({ error: 'Error al traducir el texto' });
+            }
+        });
+    } catch (error) {
+        console.error('Error en la solicitud de traducción:', error);  // Imprimir el error exacto
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
 });
 
-// app.get('/api/object/:id', async (req, res) => {
-//   const objectId = req.params.id;
-//   const metAPIUrl = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`;
+translate({
+  text: 'Hello world one two',
+  source: 'en',
+  target: 'es'
+}, function(result) {
+  console.log('Traducción de prueba:', result);
+});
 
-//   try {
-//     // Obtener los datos del objeto desde la API del Museo Metropolitano
-//     const response = await fetch(metAPIUrl);
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
 
-//     // Verificar si la respuesta es válida
-//     if (!response.ok) {
-//       return res.status(response.status).json({ message: 'Objeto no válido o no encontrado' });
-//     }
-
-//     const object = await response.json();
-
-//     // Verificar si el objeto tiene los datos requeridos
-//     const { title, culture, dynasty } = object;
-
-//     // Traducir título, cultura y dinastía al español
-//     const objectsTrducidos= await Promise.all
-//     // const [translatedTitle, translatedCulture, translatedDynasty] = await Promise.all([
-//     //   translateText(title || 'Sin título', 'es'),
-//     //   translateText(culture || 'Desconocido', 'es'),
-//     //   translateText(dynasty || 'Desconocida', 'es')
-//     // ]);
-
-//     //Enviar la respuesta con los datos traducidos
-//     res.json({
-//       objectId,
-//       title: translatedTitle,
-//       culture: translatedCulture,
-//       dynasty: translatedDynasty,
-//       primaryImageSmall: object.primaryImageSmall,
-//       objectDate: object.objectDate,
-//     });
-//   } catch (error) {
-//     console.error(`Error al obtener o traducir el objeto ${objectId}:`, error);
-//     res.status(500).json({ message: 'Error al procesar la solicitud' });
-//   }
+// translate({
+//     text: 'Hello world',
+//     source: 'en',
+//     target: 'es'
+// }, function(result) {
+//     console.log("trducciòn:" ,result);
 // });
 
-// // Función para traducir texto utilizando node-google-translate-skidz
-// function translateText(text, targetLanguage) {
-//   return new Promise((resolve, reject) => {
-//     translate({
-//       text,
-//       source: 'en',
-//       target: targetLanguage
-//     }, (result) => {
-//       if (result && result.translation) {
-//         resolve(result.translation);
-//       } else {
-//         reject('Error en la traducción');
-//       }
-//     });
-//   });
-// }
-
-
-//Función traducida, clase 7
-// app.get('/', async (req, res) => {
-//   try {
-//     const response = await axios.get(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`);
-//     const objetos = response.data;
-
-//     const objetosTraducidos = await Promise.all(objetos.map(async objeto => {
-//       const tituloTraducido = await translateText(objeto.title,'en','es');
-//       const dynastyTraducido = await translateText(objeto.dynasty,'en','es');
-//       const cultureTraducido = await translateText(objeto.culture,'en','es');
-//       return{
-//         id: objeto.id,
-//         title: tituloTraducido,
-//         dynasty: dynastyTraducido,
-//         culture: cultureTraducido,
-//       }
-//     }));
-//     res.render('index',{objetos:objetosTraducidos});
-//   } catch (error) {
-//     console.error('Error al obtener los objetos: ', error);
-//     res.status(500).send('Error interno del servidor');
-//   }
-
-// });
-
-// app.get('/traducir', async (req,res) => {
-//   res.send('<h1>Listar</h1>');
-// });
-
-// async function translateText(text, sourceLang, targetLang) {
-//     return new Promise((resolve, reject) => {
-//       translate({
-//         text:texto,
-//         source: sourceLang,
-//         target: targetLang
-//       }, function(result) {
-//         if (result && result.translation) {
-//           resolve(result.translation);
-//         } else {
-//           reject('Error en la traducción');
-//         }
-//       });
-//     });
-//   }
 
 
 app.listen(() => {
-  console.log(`Servidor escuchando en http://localhost:${port}`)
+  console.log(`Servidor escuchando en http://localhost:${PORT}`)
 });
 
 // view engine setup
