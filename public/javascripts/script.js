@@ -36,7 +36,7 @@ function openModal(images) {
 
     // Limpiar la galería antes de mostrar nuevas imágenes
     gallery.innerHTML = '';
-    
+
     // Agregar cada imagen al modal
     images.forEach(imageUrl => {
         const img = document.createElement('img');
@@ -59,15 +59,58 @@ const closeButton = document.querySelector(".close");
 closeButton.addEventListener('click', closeModal);
 
 // Cerrar el modal si el usuario hace clic fuera de la caja del modal
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById("additionalImagesModal");
     if (event.target == modal) {
         modal.style.display = "none";
     }
 }
 
-//Funciòn para crear las cards con un botòn de imagenes adicionales
-function createCard(object) {
+//Funciòn para crear las cards con un botòn de imagenes adicionales funcionando
+// async function createCard(object) {
+//     const card = document.createElement('div');
+//     card.classList.add('card');
+
+//     const img = document.createElement('img');
+//     img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+//     img.alt = object.title || 'Imagen no disponible';
+//     card.appendChild(img);
+
+//     const title = document.createElement('p');
+//     title.classList.add('card-title');
+//     const tituloTraducido = await translateText(object.title, "es");
+//     title.textContent = tituloTraducido || 'Sin título';
+//     card.appendChild(title);
+
+//     const culture = document.createElement('p');
+//     const culturaTraducida = await translateText(object.culture, "es");
+//     culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
+//     card.appendChild(culture);
+
+//     const dynasty = document.createElement('p');
+//     const dinastiaTraducida = await translateText(object.dynasty, "es");
+//     dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
+//     card.appendChild(dynasty);
+
+//     const date = document.createElement('div');
+//     date.classList.add('card-date');
+//     date.textContent = object.objectDate || 'Fecha desconocida';
+//     card.appendChild(date);
+
+//     // Mostrar botón si hay imágenes adicionales
+//     if (object.additionalImages && object.additionalImages.length > 0) {
+//         const additionalImagesButton = document.createElement('button');
+//         additionalImagesButton.textContent = "Ver imágenes adicionales";
+//         additionalImagesButton.addEventListener('click', () => {
+//             openModal(object.additionalImages);
+//         });
+//         card.appendChild(additionalImagesButton);
+//     }
+
+//     return card;
+// }
+
+async function createCard(object) {
     const card = document.createElement('div');
     card.classList.add('card');
 
@@ -78,12 +121,24 @@ function createCard(object) {
 
     const title = document.createElement('p');
     title.classList.add('card-title');
-    title.textContent = object.translatedTitle;
+    const tituloTraducido = await translateText(object.title, "es");
+    title.textContent = tituloTraducido || 'Sin título';
     card.appendChild(title);
 
-    const info = document.createElement('p');
-    info.textContent = `${object.translatedCulture} - ${object.translatedDynasty}`;
-    card.appendChild(info);
+    const culture = document.createElement('p');
+    const culturaTraducida = await translateText(object.culture, "es");
+    culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
+    card.appendChild(culture);
+
+    const dynasty = document.createElement('p');
+    const dinastiaTraducida = await translateText(object.dynasty, "es");
+    dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
+    card.appendChild(dynasty);
+
+    const date = document.createElement('div');
+    date.classList.add('card-date');
+    date.textContent = object.objectDate || 'Fecha desconocida';
+    card.appendChild(date);
 
     // Mostrar botón si hay imágenes adicionales
     if (object.additionalImages && object.additionalImages.length > 0) {
@@ -98,7 +153,117 @@ function createCard(object) {
     return card;
 }
 
-// Función para mostrar reusltados
+
+// Función para mostrar reusltados funciona pero no muestra img adicionales
+// async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
+//     const gallery = document.querySelector('.gallery');
+//     const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
+//     gallery.innerHTML = ''; // Limpiar la galería de resultados anteriores
+//     paginationContainer.innerHTML = ''; // Limpiar la paginación anterior
+
+//     showLoader(); // Mostrar el loader antes de comenzar la búsqueda
+
+//     let validObjects = []; // Array para almacenar los objetos filtrados
+//     let index = (page - 1) * pageSize; // Índice inicial de la página actual
+//     let loadedItems = 0; // Contador de objetos cargados en la página actual
+
+//     const keywordLowerCase = keyword.toLowerCase();
+
+//     // Continuar buscando objetos hasta completar el número necesario o llegar al final de la lista
+//     while (loadedItems < pageSize && index < objectIDs.length) {
+//         const objectId = objectIDs[index];
+//         index++; // Avanzar el índice
+
+//         try {
+//             const response = await fetch(`${baseURL}/objects/${objectId}`);
+
+//             // Verificar si la respuesta no fue exitosa (ej. 404)
+//             if (!response.ok) {
+//                 //console.log(`Error ${response.status} para el objeto ${objectId}`);
+//                 continue; // Saltar este objeto y continuar con los siguientes
+//             }
+
+//             const object = await response.json();
+
+//             if (object.message) {
+//                 //console.log(`Objeto no válido: ${objectId}`);
+//                 continue; // Saltar este objeto y continuar con los siguientes
+//             }
+
+//             // Filtrar por keyword solo en los campos title, culture y dynasty
+//             let matchesKeyword = false;
+//             if (object.title && object.title.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+//             if (object.culture && object.culture.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+//             if (object.dynasty && object.dynasty.toLowerCase().includes(keywordLowerCase)) {
+//                 matchesKeyword = true;
+//             }
+
+//             if (!keyword || matchesKeyword) {
+//                 validObjects.push(object);
+//                 loadedItems++;
+//             }
+//         } catch (error) {
+//             console.error(`Error al obtener el objeto ${objectId}:`, error);
+//             continue;
+//         }
+//     }
+
+//     // Mostrar los objetos filtrados en la galería
+//     validObjects.forEach((object) => {
+//         const card = createCard(object);
+//         gallery.appendChild(card); // Añadir la card a la galería
+//     });
+
+//     // // Mostrar los objetos filtrados en la galería
+//     // validObjects.forEach(async (object) => {
+//     //     const card = document.createElement('div');
+//     //     card.classList.add('card');
+
+//     //     // Imagen del objeto o imagen por defecto
+//     //     const img = document.createElement('img');
+//     //     img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
+//     //     img.alt = object.title || 'Imagen no disponible';
+//     //     card.appendChild(img);
+
+//     //     const title = document.createElement('p');
+//     //     title.classList.add('card-title');
+//     //     const tituloTraducido = await translateText(object.title,"es");
+//     //     title.textContent = tituloTraducido || 'Sin título';
+//     //     card.appendChild(title);
+
+//     //     const culture = document.createElement('p');
+//     //     const culturaTraducida = await translateText(object.culture ,"es");
+//     //     culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
+//     //     card.appendChild(culture);
+
+//     //     const dynasty = document.createElement('p');
+//     //     const dinastiaTraducida = await translateText(object.dynasty,"es");
+//     //     dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
+//     //     card.appendChild(dynasty);
+
+//     //     const date = document.createElement('div');
+//     //     date.classList.add('card-date');
+//     //     date.textContent = object.objectDate || 'Fecha desconocida';
+//     //     card.appendChild(date);
+
+//     //     gallery.appendChild(card);
+
+
+//     // });
+
+//     // createPagination(objectIDs.length, page, pageSize);
+
+//     // Crear la paginación si hay más resultados que el tamaño de la página
+//     if (objectIDs.length > pageSize) {
+//         createPagination(objectIDs.length, page, pageSize);
+//     }
+
+// }
+
 async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) {
     const gallery = document.querySelector('.gallery');
     const paginationContainer = document.querySelector('.pagination'); // Contenedor de la paginación
@@ -123,15 +288,13 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
 
             // Verificar si la respuesta no fue exitosa (ej. 404)
             if (!response.ok) {
-                console.log(`Error ${response.status} para el objeto ${objectId}`);
                 continue; // Saltar este objeto y continuar con los siguientes
             }
 
             const object = await response.json();
 
             if (object.message) {
-                console.log(`Objeto no válido: ${objectId}`);
-                continue; // Saltar este objeto
+                continue; // Saltar este objeto y continuar con los siguientes
             }
 
             // Filtrar por keyword solo en los campos title, culture y dynasty
@@ -157,45 +320,20 @@ async function displayResults(objectIDs, keyword = '', page = 1, pageSize = 20) 
     }
 
     // Mostrar los objetos filtrados en la galería
-    validObjects.forEach(async (object) => {
-        const card = document.createElement('div');
-        card.classList.add('card');
+    for (const object of validObjects) {
+        // Asegúrate de esperar a que `createCard` se complete antes de añadir la tarjeta a la galería
+        const card = await createCard(object);
+        gallery.appendChild(card); // Añadir la card a la galería
+    }
 
-        // Imagen del objeto o imagen por defecto
-        const img = document.createElement('img');
-        img.src = object.primaryImageSmall ? object.primaryImageSmall : 'https://media.istockphoto.com/id/1396814518/vector/image-coming-soon-no-photo-no-thumbnail-image-available-vector-illustration.jpg?s=612x612&w=0&k=20&c=hnh2OZgQGhf0b46-J2z7aHbIWwq8HNlSDaNp2wn_iko=';
-        img.alt = object.title || 'Imagen no disponible';
-        card.appendChild(img);
+    // Crear la paginación si hay más resultados que el tamaño de la página
+    if (objectIDs.length > pageSize) {
+        createPagination(objectIDs.length, page, pageSize);
+    }
 
-        const title = document.createElement('p');
-        title.classList.add('card-title');
-        const tituloTraducido = await translateText(object.title,"es");
-        title.textContent = tituloTraducido || 'Sin título';
-        card.appendChild(title);
-
-        const culture = document.createElement('p');
-        const culturaTraducida = await translateText(object.culture ,"es");
-        culture.textContent = `${culturaTraducida || 'Sin Cultura'}`;
-        card.appendChild(culture);
-
-        const dynasty = document.createElement('p');
-        const dinastiaTraducida = await translateText(object.dynasty,"es");
-        dynasty.textContent = `${dinastiaTraducida || 'Sin Dinastía'}`;
-        card.appendChild(dynasty);
-
-        const date = document.createElement('div');
-        date.classList.add('card-date');
-        date.textContent = object.objectDate || 'Fecha desconocida';
-        card.appendChild(date);
-
-        gallery.appendChild(card);
-
-        
-    });
-   
-    createPagination(objectIDs.length, page, pageSize);
-
+    hideLoader(); // Ocultar el loader después de que se haya completado la búsqueda y renderizado
 }
+
 
 //Función para mostrar cada página de 20 resultados
 function displayPage(page) {
@@ -277,7 +415,7 @@ function showLoader() {
     const loader = document.getElementById('loader');
     if (loader) {
         loader.style.display = 'block';  // Mostrar el loader
-    } 
+    }
     // else {
     //     console.error('El loader no se encontró en el DOM');
     // }
@@ -288,14 +426,14 @@ function hideLoader() {
     const loader = document.getElementById('loader');
     if (loader) {
         loader.style.display = 'none';  // Ocultar el loader
-    // } else {
-    //     console.error('El loader no se encontró en el DOM');
-    // 
+        // } else {
+        //     console.error('El loader no se encontró en el DOM');
+        // 
     }
 }
 
 //Función para hacer la búsqueda según los parámetros / filtros seleccionados con localizaciòn
-async function searchObjects(event) { 
+async function searchObjects(event) {
     event.preventDefault();
 
     // Mostrar el loader antes de iniciar la búsqueda
@@ -351,7 +489,7 @@ async function translateText(text, targetLang) {
         console.error('Error al traducir texto:', error);
         return text; // Devuelve el texto original en caso de error
     }
-  }
+}
 
 // Inicializar
 
